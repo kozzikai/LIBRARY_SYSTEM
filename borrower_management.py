@@ -1,5 +1,8 @@
 from utils import *
 
+logger = logging.getLogger("ADD BORROWER")
+logging.basicConfig(level=os.environ.get("LOGLEVEL", "INFO"))
+
 def reset_values():
     name_entry.delete(0, END)
     ssn_entry.delete(0, END)
@@ -8,13 +11,13 @@ def reset_values():
 
 
 def add_borrower():
-    global bname, ssn, phone, address
+    global bname, ssn, phone_no, address
     bname = name_entry.get()
     ssn = ssn_entry.get()
-    phone = phone_entry.get()
+    phone_no = phone_entry.get()
     address = address_entry.get()
 
-    if not bname or not ssn or not phone or not address:
+    if not bname or not ssn or not phone_no or not address:
         messagebox.showerror("Invalid", f"Please fill in all fields")
         return
 
@@ -22,12 +25,15 @@ def add_borrower():
         messagebox.showerror("Invalid", f"Invalid SSN: Please enter a valid 9-digit number")
         return
 
-    if not (phone.isdigit() and len(phone) == 10):
+    if not (phone_no.isdigit() and len(phone_no) == 10):
         messagebox.showerror("Invalid", f"Invalid Phone: Please enter a valid 10-digit number")
         return
 
+    ssn_string = convert_to_ssn_format(ssn)
+    phone_string = convert_to_phone_format(phone_no)
+
     # Check if entry already exists
-    query = f"SELECT * FROM {BORROWER_TABLE} WHERE ssn =  {str(ssn)}"
+    query = f"SELECT * FROM {BORROWER_TABLE} WHERE Ssn = '{ssn_string}'"
     entries = cur.execute(query)
     con.commit()
 
@@ -36,25 +42,25 @@ def add_borrower():
         messagebox.showinfo("Invalid", f"Borrower already exists, card_id is {card_id}")
         return
 
+    # SQL query to find the highest id value
+    cur.execute(f"SELECT Card_id FROM {BORROWER_TABLE} ORDER BY Card_id DESC LIMIT 1")
+    highest_id_entry = cur.fetchone()
+    current_max_id = highest_id_entry[0] if highest_id_entry else "ID000000"
+    new_id = get_next_id(current_max_id)
     try:
-        cur.execute(f"INSERT INTO {BORROWER_TABLE}(Ssn,Bname,Address,Phone) VALUES('" + str(
-            ssn) + "','" + bname + "','" + address + "','" + phone + "')")
+
+        insert_query = f"INSERT INTO {BORROWER_TABLE}(Card_id,Ssn,Bname,Address,Phone) VALUES('{new_id}','{ssn_string}','{bname}','{address}','{phone_string}')"
+        logger.info(f"Executing insert query: {insert_query}")
+        cur.execute(insert_query)
         con.commit()
-    except:
+        logger.info(f"Card id for borrower {bname} is {new_id}")
+        messagebox.showinfo("Success", f"Borrower Added, Borrower's card_id is {new_id}")
+        master.destroy()
+    except Exception as e:
+        logger.error(f"Addition of borrower failed with exception: {e}")
         messagebox.showinfo("Failure", "Please check values and try again.")
         reset_values()
         return
-
-    try:
-        cur.execute(f"SELECT Card_id FROM {BORROWER_TABLE} WHERE Ssn = {ssn}")
-        con.commit()
-        card_id = cur.fetchone()[0]
-
-        print(f"Card Id: {card_id}")
-        messagebox.showinfo("Success", f"Borrower Added, Borrower's card_id is {card_id}")
-        master.destroy()
-    except:
-        messagebox.showerror("Failure", "Borrower Added, Failed to display card_id. Please submit again to get card_id")
 
 
 def get_borrower_data():
@@ -86,7 +92,7 @@ def get_borrower_data():
     create_button(master, text="SUBMIT", background='snow', foreground='black', command=add_borrower, x_pos=0.28, y_pos=0.9, rel_width=0.18, rel_height=0.08)
 
     # Quit Button
-    create_button(master, text="EXIT", background='snow', foreground='black', command=master.destroy,
+    create_button(master, text="BACK", background='snow', foreground='black', command=master.destroy,
                   x_pos=0.53, y_pos=0.9, rel_width=0.18, rel_height=0.08)
 
     master.mainloop()

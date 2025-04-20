@@ -1,6 +1,7 @@
 from utils import *
-from tkinter import ttk
 
+logger = logging.getLogger("REFRESH FINES")
+logging.basicConfig(level=os.environ.get("LOGLEVEL", "INFO"))
 
 def refresh():
     global today_date
@@ -8,27 +9,37 @@ def refresh():
     dict_cur.execute("SELECT CURDATE()")
     con.commit()
     today_date = dict_cur.fetchone()["CURDATE()"]
-    print("today's date:")
-    print(today_date)
-    dict_cur.execute(f"SELECT * FROM {LOANS_TABLE} WHERE Date_in IS NULL")
+
+    dict_cur.execute(
+        f"SELECT * FROM {LOANS_TABLE} AS L JOIN FINES AS F USING (Loan_id)"
+        f"WHERE  Date_in IS NULL OR (Date_in > Due_date AND F.Paid = 0)")
+
     con.commit()
-    existing_loans = dict_cur.fetchall()
-    for loan_entry in existing_loans:
-        print(f"\n\n***Entry***")
+    existing_fines = dict_cur.fetchall()
+    for loan_entry in existing_fines:
         date_out = loan_entry["Date_out"]
         due_date = loan_entry["Due_date"]
+        date_in = loan_entry["Date_in"]
         loan_id = loan_entry['Loan_id']
-        print(f"Date_out: {date_out}, Due_date: {due_date}")
 
-        dict_cur.execute("SELECT DATEDIFF('" + str(today_date) + "','" + str(due_date) + "') AS days")
+        if date_in:
+            # For book loans which have been returned already but there are unpaid fines on them
+            dict_cur.execute("SELECT DATEDIFF('" + str(date_in) + "','" + str(due_date) + "') AS days")
+        else:
+            # For book loans which haven't been returned till date
+            dict_cur.execute("SELECT DATEDIFF('" + str(today_date) + "','" + str(due_date) + "') AS days")
+
         con.commit()
         date_diff = dict_cur.fetchone()["days"]
-        print(f"difference: {date_diff}")
 
         if date_diff > 0:
             fine = date_diff * 0.25
-            print(f"loan_id: {loan_id}, fine: {fine}")
+            logger.info(f"Current Fine on loan_id {loan_id} is {fine}")
             dict_cur.execute(f"UPDATE {FINES_TABLE} SET Fine_amt = " + str(fine) + " WHERE Loan_id = " + str(loan_id))
+            con.commit()
+        else:
+            logger.info(f"No pending Fines on loan_id {loan_id}")
+            dict_cur.execute(f"UPDATE {FINES_TABLE} SET Fine_amt = 0 WHERE Loan_id = " + str(loan_id))
             con.commit()
 
 
@@ -40,15 +51,15 @@ def display_fines():
         return
 
     # Display Fines grouped by card id
-    dict_cur.execute(f"SELECT L.Card_id, SUM(F.Fine_amt) as Total_Fine, AVG(F.Paid) as Paid FROM {LOANS_TABLE} AS L,"
-                     f"{FINES_TABLE} AS F WHERE L.Loan_id = F.Loan_id GROUP BY L.Card_id")
-    # SELECT L.Card_id, SUM(F.Fine_amt) as Total_Fine, AVG(F.Paid) as Paid FROM BOOK_LOANS AS L,FINES AS F WHERE L.Loan_id = F.Loan_id GROUP BY L.Card_id
+    dict_cur.execute(f"SELECT L.Card_id, SUM(F.Fine_amt) as Total_Fine, 'No' as Paid FROM {LOANS_TABLE} AS L,"
+                     f"{FINES_TABLE} AS F WHERE L.Loan_id = F.Loan_id AND F.Fine_amt > 0 AND FLOOR(F.Paid) = 0 GROUP BY L.Card_id")
     con.commit()
     fines_list = dict_cur.fetchall()
-
-    if fines_list:
-        for fine in fines_list:
-            print(fine)
+    logger.info("Refresh Fines Completed.")
+    if not fines_list:
+        logger.info("No existing fines to display")
+        messagebox.showinfo("INFO", "Refresh Fines Completed. No existing fines to display")
+        return
 
     master = create_master(title="FINES")
 
@@ -65,7 +76,6 @@ def display_fines():
 
     canvas.create_window((0, 0), window=scrollable_frame, anchor='nw')
 
-    print(f"Headers {fines_list[0]}")
     headers = fines_list[0].keys()
     for column, header in enumerate(headers):
         label = Label(scrollable_frame, text=header, font=('bold', 10))

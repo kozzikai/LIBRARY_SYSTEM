@@ -1,0 +1,18 @@
+# Environment variables to be modified based on the user's environment(Line 2 to Line 7 based on the user of the code)
+DB_HOST="<User's MySQL server host>"
+DB_USERNAME="<User's MySQL username>"
+DB_PASSWORD="<User's MySQL password>"
+DB_SCHEMA_FILE="<Absolute path to Database-Library-Schema.sql>"
+BOOKS_CSV_FILE="<Absolute path to books.csv to be used for DB creation>"
+BORROWERS_CSV_FILE="<Absolute path to borrowers.csv to be used for DB creation>"
+
+
+# Constant values to avoid repetition
+DB_NAME="LIBRARY"
+BOOK_TABLE="BOOK"
+AUTHOR_TABLE="AUTHORS"
+BOOK_AUTHOR_TABLE="BOOK_AUTHORS"
+EMPLOYEE_TABLE="EMPLOYEE"
+BORROWER_TABLE="BORROWER"
+LOANS_TABLE="BOOK_LOANS"
+FINES_TABLE="FINES"

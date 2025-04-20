@@ -17,4 +17,3 @@ BOOK_AUTHOR_TABLE = os.environ.get('BOOK_AUTHOR_TABLE')
 BORROWER_TABLE = os.environ.get('BORROWER_TABLE')
 LOANS_TABLE = os.environ.get('LOANS_TABLE')
 FINES_TABLE = os.environ.get('FINES_TABLE')
-

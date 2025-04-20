@@ -10,11 +10,16 @@ from load_env import *
 logger = logging.getLogger("PRE-PROCESSING")
 logging.basicConfig(level=os.environ.get("LOGLEVEL", "INFO"))
 try:
-    con = pymysql.connect(host=DB_HOST, user=DB_USERNAME, password=DB_PASSWORD, unix_socket="/tmp/mysql.sock")
+    con = pymysql.connect(host=DB_HOST,
+                          user=DB_USERNAME,
+                          password=DB_PASSWORD,
+                          unix_socket="/tmp/mysql.sock")
     cur = con.cursor()
     logger.info("Successfully connected to MySQL Server")
 except:
-    logger.error("Failed to connect to MySQL Server. Please check credentials given in environment file")
+    logger.error(
+        "Failed to connect to MySQL Server. Please check credentials given in environment file"
+    )
     exit(1)
 
 
@@ -49,7 +54,8 @@ def balance_quotes(str):
 def main():
     with open(DB_SCHEMA_FILE, 'r') as file:
         sql_script = file.read()
-        commands = sql_script.split(';')  # Split by ';' to get individual commands
+        commands = sql_script.split(
+            ';')  # Split by ';' to get individual commands
 
         for command in commands:
             if command.strip():  # Check if command is not empty
@@ -101,7 +107,9 @@ def main():
                 cur.execute(query)
                 book_authors.append(author_name)
 
-    print("\n\n\n********* BOOK, AUTHORS and BOOK_AUTHORS Tables Population Done *********\n\n\n")
+    print(
+        "\n\n\n********* BOOK, AUTHORS and BOOK_AUTHORS Tables Population Done *********\n\n\n"
+    )
     con.commit()
     book_file_obj.close()
 
@@ -115,7 +123,8 @@ def main():
         card_id = column_list[0]
         ssn = column_list[1]
         name = balance_quotes(f"{column_list[2]} {column_list[3]}")
-        address = balance_quotes(f"{column_list[5]}, {column_list[6]}, {column_list[7]}")
+        address = balance_quotes(
+            f"{column_list[5]}, {column_list[6]}, {column_list[7]}")
         phone = column_list[8]
 
         insert_query = f"INSERT INTO {BORROWER_TABLE} (Card_id, Ssn, Bname, Address, Phone) VALUES (\"{card_id}\",\"{ssn}\",{name},{address},\"{phone}\")"

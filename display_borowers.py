@@ -8,7 +8,8 @@ def search_borrowers():
     global tree, back_button, matched_borrowers, result_frame
 
     try:
-        logger.info(f"Trying to remove previously loaded search results if they exist")
+        logger.info(
+            f"Trying to remove previously loaded search results if they exist")
         result_frame.destroy()
     except Exception as e:
         logger.info(f"No previously loaded search results to remove")
@@ -65,18 +66,25 @@ def search_borrowers():
 
     # Now we insert the data into the Treeview
     for borrower in matched_borrowers:
-        tree.insert('', END, values=(borrower["Card_id"], borrower["Ssn"], borrower["Bname"],
-                                                borrower["Address"], borrower["Phone"]))
+        tree.insert('',
+                    END,
+                    values=(borrower["Card_id"], borrower["Ssn"],
+                            borrower["Bname"], borrower["Address"],
+                            borrower["Phone"]))
 
     result_frame.place(relx=0.02, rely=0.15, relwidth=0.96, relheight=0.7)
 
     # Add vertical scrollbar
-    vscroll = ttk.Scrollbar(result_frame, orient="vertical", command=tree.yview)
+    vscroll = ttk.Scrollbar(result_frame,
+                            orient="vertical",
+                            command=tree.yview)
     tree.configure(yscrollcommand=vscroll.set)
     vscroll.pack(side='right', fill='y')
 
     # Add horizontal scrollbar
-    hscroll = ttk.Scrollbar(result_frame, orient="horizontal", command=tree.xview)
+    hscroll = ttk.Scrollbar(result_frame,
+                            orient="horizontal",
+                            command=tree.xview)
     tree.configure(xscrollcommand=hscroll.set)
     hscroll.pack(side='bottom', fill='x')
 
@@ -85,7 +93,9 @@ def search_borrowers():
     result_frame.update_idletasks()
 
     if not tree.get_children():
-        messagebox.showinfo("INFO", "No borrowers with matching Ssn/Bname/Address/Phone Pattern")
+        messagebox.showinfo(
+            "INFO",
+            "No borrowers with matching Ssn/Bname/Address/Phone Pattern")
 
 
 def borrowers_search_page():
@@ -96,17 +106,37 @@ def borrowers_search_page():
     main_canvas = create_canvas(master, background="burlywood3")
 
     # Creating Label and Entry for accepting search pattern
-    search_label, search_entry = create_label_entry(master, text="BORROWER INFO : ",  background='burlywood3',
-                                                    foreground='tan4',label_x_pos=0.02, entry_x_pos=0.23, y_pos=0.05,
-                                                    rel_width=0.54, font=("Helvetica", 15, "bold"))
+    search_label, search_entry = create_label_entry(master,
+                                                    text="BORROWER INFO : ",
+                                                    background='burlywood3',
+                                                    foreground='tan4',
+                                                    label_x_pos=0.02,
+                                                    entry_x_pos=0.23,
+                                                    y_pos=0.05,
+                                                    rel_width=0.54,
+                                                    font=("Helvetica", 15,
+                                                          "bold"))
 
     # Search Button
-    search_button = create_button(master, text="SEARCH", background='snow', foreground='black',
-                                  command=search_borrowers, x_pos=0.80, y_pos=0.05, rel_width=0.18, rel_height=0.05)
+    search_button = create_button(master,
+                                  text="SEARCH",
+                                  background='snow',
+                                  foreground='black',
+                                  command=search_borrowers,
+                                  x_pos=0.80,
+                                  y_pos=0.05,
+                                  rel_width=0.18,
+                                  rel_height=0.05)
 
     # back Button
-    back_button = create_button(master, text="BACK", background='snow', foreground='black',
+    back_button = create_button(master,
+                                text="BACK",
+                                background='snow',
+                                foreground='black',
                                 command=master.destroy,
-                                x_pos=0.40, y_pos=0.90, rel_width=0.18, rel_height=0.05)
+                                x_pos=0.40,
+                                y_pos=0.90,
+                                rel_width=0.18,
+                                rel_height=0.05)
 
     master.mainloop()

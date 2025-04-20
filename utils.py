@@ -1,5 +1,4 @@
-from tkinter import *
-from tkinter import ttk, messagebox, font
+from tkinter import Tk, Canvas, BOTH, Frame, Label, Entry, Button, messagebox, Toplevel, ttk, font, W, END
 import pymysql
 from load_env import *
 
@@ -7,14 +6,18 @@ logger = logging.getLogger("UTILS")
 logging.basicConfig(level=os.environ.get("LOGLEVEL", "INFO"))
 
 try:
-    con = pymysql.connect(host=DB_HOST, user=DB_USERNAME, password=DB_PASSWORD, unix_socket="/tmp/mysql.sock",
+    con = pymysql.connect(host=DB_HOST,
+                          user=DB_USERNAME,
+                          password=DB_PASSWORD,
+                          unix_socket="/tmp/mysql.sock",
                           database=DB_NAME)
     cur = con.cursor()
     dict_cur = con.cursor(pymysql.cursors.DictCursor)
     logger.info("Was able to connect to DB")
 except:
     logger.error("Failed to connect to DB")
-    messagebox.showinfo("Failure","Failed to connect to My SQL Db, please try again")
+    messagebox.showinfo("Failure",
+                        "Failed to connect to My SQL Db, please try again")
     exit(1)
 
 
@@ -26,6 +29,7 @@ def is_valid_card_id(card_id):
     if not entries:
         return False
     return True
+
 
 def create_canvas(master, background="burlywood3"):
     canvas = Canvas(master)
@@ -43,13 +47,30 @@ def create_master(title="LIBRARY", geometry="700x580", width=500, height=500):
     return master
 
 
-def create_frame(master, background, x_pos, y_pos, rel_width, rel_height, border_width=0):
+def create_frame(master,
+                 background,
+                 x_pos,
+                 y_pos,
+                 rel_width,
+                 rel_height,
+                 border_width=0):
     frame = Frame(master, bg=background, bd=border_width)
-    frame.place(relx=x_pos, rely=y_pos, relwidth=rel_width, relheight=rel_height)
+    frame.place(relx=x_pos,
+                rely=y_pos,
+                relwidth=rel_width,
+                relheight=rel_height)
     return frame
 
 
-def create_label(master, text, foreground, x_pos, y_pos, rel_width, rel_height, background='burlywood3', font=None):
+def create_label(master,
+                 text,
+                 foreground,
+                 x_pos,
+                 y_pos,
+                 rel_width,
+                 rel_height,
+                 background='burlywood3',
+                 font=None):
     if background:
         label = Label(master, text=text, fg=foreground, bg=background)
     else:
@@ -58,11 +79,22 @@ def create_label(master, text, foreground, x_pos, y_pos, rel_width, rel_height, 
     if font:
         label.config(font=font)
 
-    label.place(relx=x_pos, rely=y_pos, relwidth=rel_width, relheight=rel_height)
+    label.place(relx=x_pos,
+                rely=y_pos,
+                relwidth=rel_width,
+                relheight=rel_height)
     return label
 
 
-def create_label_entry(master_frame, text, background, foreground, label_x_pos, entry_x_pos, y_pos, rel_width, font=None):
+def create_label_entry(master_frame,
+                       text,
+                       background,
+                       foreground,
+                       label_x_pos,
+                       entry_x_pos,
+                       y_pos,
+                       rel_width,
+                       font=None):
     label = Label(master_frame, text=text, bg=background, fg=foreground)
     label.place(relx=label_x_pos, rely=y_pos)
 
@@ -73,10 +105,26 @@ def create_label_entry(master_frame, text, background, foreground, label_x_pos, 
     return label, entry
 
 
-def create_button(master, text, foreground, x_pos, y_pos, rel_width, rel_height, command, background='tan4'):
-    button = Button(master, text=text, bg=background, fg=foreground, command=command, bd=0)
+def create_button(master,
+                  text,
+                  foreground,
+                  x_pos,
+                  y_pos,
+                  rel_width,
+                  rel_height,
+                  command,
+                  background='tan4'):
+    button = Button(master,
+                    text=text,
+                    bg=background,
+                    fg=foreground,
+                    command=command,
+                    bd=0)
     button.config(borderwidth=0, relief="flat", highlightthickness=0)
-    button.place(relx=x_pos, rely=y_pos, relwidth=rel_width, relheight=rel_height)
+    button.place(relx=x_pos,
+                 rely=y_pos,
+                 relwidth=rel_width,
+                 relheight=rel_height)
 
     return button
 
@@ -98,7 +146,9 @@ def show_modal_message_box(message, title="ERROR"):
     Button(error_window, text="Ok", command=error_window.destroy).pack(pady=5)
 
     # Make the window modal
-    error_window.transient(error_window.master)  # Make the dialog transient with respect to the main window
+    error_window.transient(
+        error_window.master
+    )  # Make the dialog transient with respect to the main window
     error_window.grab_set()  # Ensure all events are directed to this window
     error_window.wait_window()  # Wait here until the window is destroyed
 
@@ -117,4 +167,3 @@ def get_next_id(current_id):
     next_id_num = int(current_id[2:]) + 1
     next_id = f"ID{next_id_num:06d}"  # Formats the number as a zero-padded string
     return next_id
-

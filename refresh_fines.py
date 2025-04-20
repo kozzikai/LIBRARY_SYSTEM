@@ -3,6 +3,7 @@ from utils import *
 logger = logging.getLogger("REFRESH FINES")
 logging.basicConfig(level=os.environ.get("LOGLEVEL", "INFO"))
 
+
 def refresh():
     global today_date
 
@@ -24,10 +25,12 @@ def refresh():
 
         if date_in:
             # For book loans which have been returned already but there are unpaid fines on them
-            dict_cur.execute("SELECT DATEDIFF('" + str(date_in) + "','" + str(due_date) + "') AS days")
+            dict_cur.execute("SELECT DATEDIFF('" + str(date_in) + "','" +
+                             str(due_date) + "') AS days")
         else:
             # For book loans which haven't been returned till date
-            dict_cur.execute("SELECT DATEDIFF('" + str(today_date) + "','" + str(due_date) + "') AS days")
+            dict_cur.execute("SELECT DATEDIFF('" + str(today_date) + "','" +
+                             str(due_date) + "') AS days")
 
         con.commit()
         date_diff = dict_cur.fetchone()["days"]
@@ -35,11 +38,14 @@ def refresh():
         if date_diff > 0:
             fine = date_diff * 0.25
             logger.info(f"Current Fine on loan_id {loan_id} is {fine}")
-            dict_cur.execute(f"UPDATE {FINES_TABLE} SET Fine_amt = " + str(fine) + " WHERE Loan_id = " + str(loan_id))
+            dict_cur.execute(f"UPDATE {FINES_TABLE} SET Fine_amt = " +
+                             str(fine) + " WHERE Loan_id = " + str(loan_id))
             con.commit()
         else:
             logger.info(f"No pending Fines on loan_id {loan_id}")
-            dict_cur.execute(f"UPDATE {FINES_TABLE} SET Fine_amt = 0 WHERE Loan_id = " + str(loan_id))
+            dict_cur.execute(
+                f"UPDATE {FINES_TABLE} SET Fine_amt = 0 WHERE Loan_id = " +
+                str(loan_id))
             con.commit()
 
 
@@ -51,14 +57,17 @@ def display_fines():
         return
 
     # Display Fines grouped by card id
-    dict_cur.execute(f"SELECT L.Card_id, SUM(F.Fine_amt) as Total_Fine, 'No' as Paid FROM {LOANS_TABLE} AS L,"
-                     f"{FINES_TABLE} AS F WHERE L.Loan_id = F.Loan_id AND F.Fine_amt > 0 AND FLOOR(F.Paid) = 0 GROUP BY L.Card_id")
+    dict_cur.execute(
+        f"SELECT L.Card_id, SUM(F.Fine_amt) as Total_Fine, 'No' as Paid FROM {LOANS_TABLE} AS L,"
+        f"{FINES_TABLE} AS F WHERE L.Loan_id = F.Loan_id AND F.Fine_amt > 0 AND FLOOR(F.Paid) = 0 GROUP BY L.Card_id"
+    )
     con.commit()
     fines_list = dict_cur.fetchall()
     logger.info("Refresh Fines Completed.")
     if not fines_list:
         logger.info("No existing fines to display")
-        messagebox.showinfo("INFO", "Refresh Fines Completed. No existing fines to display")
+        messagebox.showinfo(
+            "INFO", "Refresh Fines Completed. No existing fines to display")
         return
 
     master = create_master(title="FINES")
@@ -92,5 +101,3 @@ def display_fines():
     scrollable_frame.update_idletasks()
     canvas.config(scrollregion=canvas.bbox('all'))
     master.mainloop()
-
-
